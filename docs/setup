@@ -1,0 +1,46 @@
+generic pass:
+dotFive1
+
+** nexus3 **
+pull and run:
+docker run -d -p 8081:8081 -p 8082:8082 --name nexus sonatype/nexus3
+
+read temporary admin-s password:
+docker exec $(docker container list -q -f name=nexus) 'cat' './nexus-data/admin.password'
+
+enable realms:
+Administration -> Security -> Realms -> NuGet API-Key Realm -> Active
+										Docker Bearer Token Realm -> Active
+
+enable possibility to pull packages anonymously:
+Administration -> Security -> Anonymous -> check 'Allow' -> Realm: 'Local Authorizing Realm'
+
+create repositories:
+nuget with name 'nuget-default'
+docker with name 'docker-default'
+
+for all repositories:
+Deployment policy -> Disable redeploy
+
+get nuget api key:
+<admin> -> NuGet API Key -> Access API Key
+
+expose nexus port for docker repository:
+Administration -> Repository -> Repositories -> docker-default -> HTTP -> 8082
+
+create docker user/role:
+Administration -> Security -> Roles -> Create role -> Privileges -> (Filter by 'docker') -> Enable
+Administration -> Security -> Users -> Create local user -> Roles -> <docker role name> -> Granted
+
+
+** ef **
+dotnet ef now is separate tool:
+dotnet tool install --global dotnet-ef
+
+create migration:
+dotnet ef migrations add IncreaseLengthOfLinkProperties -o Data/EF/Migrations -p ./match-statistics-parse/match-statistics-parse.csproj -c MigrationsDataContext
+dotnet ef migrations add IncreaseLengthOfLinkProperties -o Data/EF/Migrations -p ./history-parse/history-parse.csproj -c MigrationsDataContext
+
+update database:
+dotnet ef database update -p ./match-statistics-parse/match-statistics-parse.csproj -c MigrationsDataContext
+dotnet ef database update -p ./history-parse/history-parse.csproj -c MigrationsDataContext

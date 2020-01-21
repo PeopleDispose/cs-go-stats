@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  SERVICE_NAME:
+    image: IMAGE_NAME
+    ports:
+      - "PORTS_RANGE"
+    environment:
+      - ENV_NAME=ENV_VALUE
+    container_name: CONTAINER_NAME
+    networks:
+      - prime
+
+networks:
+  prime:
+    driver: bridge
